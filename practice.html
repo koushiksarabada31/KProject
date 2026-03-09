@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Practice Exams — KL University</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div class="main-wrapper">
+      <header class="top-header" id="top-header"></header>
+      <main class="main-content"><div id="page-content"></div></main>
+    </div>
+  </div>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    initDashboardPage();
+    const diffBadge = { Easy:'badge-success', Medium:'badge-warning', Hard:'badge-danger' };
+    let state = 'list', currentExam = null, questions = [], currentQ = 0, answers = {}, timeLeft = 0, timer = null, quizScore = 0;
+
+    function renderList() {
+      state = 'list'; clearInterval(timer);
+      const cards = practiceExams.map((pe,i) => {
+        const best = pe.bestScore;
+        return `
+        <div class="card animate-scale-in delay-${(i%5)+1}">
+          <div class="card-body">
+            <div class="flex items-start justify-between mb-4">
+              <div style="padding:0.75rem;border-radius:0.75rem;background:hsl(0,72%,45%,0.1);color:var(--primary)">${icons.brain}</div>
+              <span class="badge ${diffBadge[pe.difficulty]}">${pe.difficulty}</span>
+            </div>
+            <h3 class="font-semibold text-lg">${pe.title}</h3>
+            <p class="text-sm text-muted mt-1">${pe.subject}</p>
+            <div class="flex items-center text-xs text-muted mt-3" style="gap:1rem">
+              <span>🧠 ${pe.questions} questions</span>
+              <span>⏱️ ${pe.duration}</span>
+              <span>🏆 ${pe.attempts} attempts</span>
+            </div>
+            ${best !== null ? `<div class="mt-4"><div class="flex justify-between text-xs mb-1"><span class="text-muted">Best Score</span><span class="font-semibold">${best}%</span></div><div class="progress-bar"><div class="progress-bar-fill" style="width:${best}%"></div></div></div>` : ''}
+            <button class="btn btn-primary btn-full mt-4" onclick="startExam(${pe.id})">▶️ ${pe.attempts > 0 ? 'Retry' : 'Start Exam'}</button>
+          </div>
+        </div>`;
+      }).join('');
+      document.getElementById('page-content').innerHTML = `<div class="space-y-6">
+        <div><h1 class="text-2xl font-display font-bold">Practice Exams</h1><p class="text-sm text-muted">Test your knowledge with MCQ quizzes</p></div>
+        <div class="grid grid-2 gap-4">${cards}</div>
+      </div>`;
+    }
+
+    window.startExam = function(id) {
+      currentExam = practiceExams.find(e => e.id === id);
+      if (!currentExam || !currentExam.questionList) { showToast('No questions', '', 'destructive'); return; }
+      questions = currentExam.questionList;
+      currentQ = 0; answers = {};
+      const mins = parseInt(currentExam.duration) || 10;
+      timeLeft = mins * 60;
+      state = 'quiz';
+      renderQuiz();
+      timer = setInterval(() => {
+        timeLeft--;
+        document.getElementById('timer').textContent = formatTime(timeLeft);
+        if (timeLeft <= 0) { clearInterval(timer); finishQuiz(); }
+      }, 1000);
+    };
+
+    function formatTime(s) { return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; }
+
+    function renderQuiz() {
+      const q = questions[currentQ];
+      const opts = q.options.map((o,i) => `<button class="quiz-option ${answers[currentQ]===i?'selected':''}" onclick="selectAnswer(${i})"><span class="opt-key">${'ABCD'[i]}.</span>${o}</button>`).join('');
+      const nums = questions.map((_,i) => `<button class="quiz-num ${i===currentQ?'current':answers[i]!==undefined?'answered':'unanswered'}" onclick="goToQ(${i})">${i+1}</button>`).join('');
+      const progress = ((currentQ+1)/questions.length)*100;
+
+      document.getElementById('page-content').innerHTML = `<div class="space-y-6" style="max-width:48rem;margin:0 auto">
+        <div class="flex items-center justify-between">
+          <div><h2 class="font-display font-bold text-lg">${currentExam.title}</h2><p class="text-sm text-muted">Question ${currentQ+1} of ${questions.length}</p></div>
+          <span class="badge badge-outline" style="font-size:1rem;padding:0.5rem 1rem;font-family:monospace;border-color:var(--warning);color:var(--warning)" id="timer">⏱️ ${formatTime(timeLeft)}</span>
+        </div>
+        <div class="progress-bar"><div class="progress-bar-fill" style="width:${progress}%"></div></div>
+        <div class="card animate-fade-in"><div class="card-body">
+          <p class="font-semibold text-lg mb-6">${q.q}</p>
+          <div class="space-y-2">${opts}</div>
+        </div></div>
+        <div class="flex justify-between">
+          <button class="btn btn-outline" onclick="prevQ()" ${currentQ===0?'disabled style="opacity:0.5"':''}>⬅️ Previous</button>
+          ${currentQ < questions.length-1 ? `<button class="btn btn-primary" onclick="nextQ()">Next ➡️</button>` : `<button class="btn btn-primary" onclick="finishQuiz()">Submit Exam</button>`}
+        </div>
+        <div class="flex flex-wrap" style="gap:0.5rem">${nums}</div>
+      </div>`;
+    }
+
+    window.selectAnswer = i => { answers[currentQ] = i; renderQuiz(); };
+    window.goToQ = i => { currentQ = i; renderQuiz(); };
+    window.prevQ = () => { if (currentQ > 0) { currentQ--; renderQuiz(); } };
+    window.nextQ = () => { if (currentQ < questions.length-1) { currentQ++; renderQuiz(); } };
+
+    window.finishQuiz = function() {
+      clearInterval(timer);
+      let correct = 0;
+      questions.forEach((q,i) => { if (answers[i] === q.answer) correct++; });
+      quizScore = Math.round((correct/questions.length)*100);
+      state = 'results';
+
+      const reviews = questions.map((q,i) => {
+        const isCorrect = answers[i] === q.answer;
+        const optsHTML = q.options.map((o,j) => {
+          let cls = 'review-option neutral-opt';
+          if (j === q.answer) cls = 'review-option correct-opt';
+          else if (j === answers[i] && j !== q.answer) cls = 'review-option wrong-opt';
+          return `<div class="${cls}"><span class="font-semibold" style="margin-right:0.5rem">${'ABCD'[j]}.</span>${o}</div>`;
+        }).join('');
+        return `<div class="review-card ${isCorrect?'correct':'incorrect'} animate-fade-in-up delay-${(i%5)+1}">
+          <div class="flex items-start" style="gap:0.5rem;margin-bottom:0.75rem">
+            <span style="color:${isCorrect?'var(--success)':'var(--destructive)'};flex-shrink:0;margin-top:2px">${isCorrect?'✅':'❌'}</span>
+            <p class="font-medium">${i+1}. ${q.q}</p>
+          </div>
+          <div class="grid grid-2 gap-2 ml-7">${optsHTML}</div>
+          ${q.explanation ? `<div class="explanation-box">💡 <span class="font-medium">Explanation:</span> ${q.explanation}</div>` : ''}
+        </div>`;
+      }).join('');
+
+      document.getElementById('page-content').innerHTML = `<div class="space-y-6" style="max-width:48rem;margin:0 auto">
+        <div class="text-center animate-scale-in">
+          <div style="display:inline-flex;padding:1.5rem;border-radius:50%;background:hsl(0,72%,45%,0.1);margin-bottom:1rem"><span style="font-size:3rem">🏆</span></div>
+          <h2 class="text-2xl font-display font-bold">Exam Complete!</h2>
+          <p class="text-4xl font-bold text-primary mt-2">${quizScore}%</p>
+          <p class="text-muted mt-1">${correct} / ${questions.length} correct</p>
+        </div>
+        <div class="text-center"><button class="btn btn-outline" onclick="renderList()">⬅️ Back to Exams</button></div>
+        <div class="space-y-4">
+          <h3 class="font-display font-semibold text-lg">Review Answers</h3>
+          ${reviews}
+        </div>
+      </div>`;
+    };
+
+    renderList();
+  </script>
+</body>
+</html>

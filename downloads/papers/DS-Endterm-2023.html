@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Data Structures — Endterm 2023</title>
+<style>body{font-family:'Segoe UI',sans-serif;max-width:800px;margin:2rem auto;padding:0 1.5rem;line-height:1.8;color:#1a1a2e}h1{color:#b91c1c;border-bottom:3px solid #b91c1c;padding-bottom:0.5rem}h2{color:#c2410c;margin-top:1.5rem}.header{text-align:center;border:2px solid #1a1a2e;padding:1rem;margin-bottom:2rem}.q{margin:1rem 0;padding:0.75rem;background:#f8fafc;border-left:3px solid #b91c1c;border-radius:0 8px 8px 0}.marks{float:right;font-weight:700;color:#b91c1c}.sol{background:#dcfce7;border-left:3px solid #22c55e;padding:0.75rem;margin:0.5rem 0;border-radius:0 8px 8px 0}pre{background:#1e293b;color:#e2e8f0;padding:1rem;border-radius:8px}</style>
+</head>
+<body>
+<div class="header">
+<h1>KL Deemed to be University</h1>
+<p><strong>End Semester Examination — December 2023</strong></p>
+<p>Subject: Data Structures (CS201) | Time: 3 Hours | Max Marks: 70</p>
+</div>
+
+<h2>Part A — Short Answer (5 × 2 = 10 Marks)</h2>
+
+<div class="q"><span class="marks">[2M]</span><strong>1.</strong> Define Abstract Data Type (ADT). Give one example.</div>
+<div class="sol"><strong>Solution:</strong> An ADT is a mathematical model for data types where the data type is defined by its behavior (operations) rather than its implementation. Example: Stack ADT with push(), pop(), peek() operations.</div>
+
+<div class="q"><span class="marks">[2M]</span><strong>2.</strong> What is the difference between stack and queue?</div>
+<div class="sol"><strong>Solution:</strong> Stack uses LIFO (Last In First Out) — push/pop at same end. Queue uses FIFO (First In First Out) — enqueue at rear, dequeue at front.</div>
+
+<div class="q"><span class="marks">[2M]</span><strong>3.</strong> Write the time complexity of binary search.</div>
+<div class="sol"><strong>Solution:</strong> Best: O(1), Average: O(log n), Worst: O(log n). Space: O(1) iterative, O(log n) recursive.</div>
+
+<div class="q"><span class="marks">[2M]</span><strong>4.</strong> What is a complete binary tree?</div>
+<div class="sol"><strong>Solution:</strong> A binary tree where all levels are fully filled except possibly the last level, which is filled from left to right.</div>
+
+<div class="q"><span class="marks">[2M]</span><strong>5.</strong> State the property of a max-heap.</div>
+<div class="sol"><strong>Solution:</strong> In a max-heap, the value of each node is greater than or equal to the values of its children. The root contains the maximum element.</div>
+
+<h2>Part B — Long Answer (4 × 10 = 40 Marks)</h2>
+
+<div class="q"><span class="marks">[10M]</span><strong>6.</strong> Implement a singly linked list in Java/C with insert, delete, and display operations.</div>
+<div class="sol"><strong>Solution:</strong>
+<pre>class Node {
+    int data; Node next;
+    Node(int d) { data = d; next = null; }
+}
+class LinkedList {
+    Node head;
+    void insertAtHead(int data) {
+        Node newNode = new Node(data);
+        newNode.next = head;
+        head = newNode;
+    }
+    void deleteKey(int key) {
+        if (head != null && head.data == key) { head = head.next; return; }
+        Node prev = head;
+        while (prev.next != null && prev.next.data != key) prev = prev.next;
+        if (prev.next != null) prev.next = prev.next.next;
+    }
+    void display() {
+        Node curr = head;
+        while (curr != null) { System.out.print(curr.data + " -> "); curr = curr.next; }
+        System.out.println("null");
+    }
+}</pre></div>
+
+<div class="q"><span class="marks">[10M]</span><strong>7.</strong> Explain the working of Quick Sort with an example. Analyze its time complexity.</div>
+<div class="sol"><strong>Solution:</strong> Quick Sort uses divide-and-conquer with a pivot element. Steps: 1) Choose pivot 2) Partition: elements < pivot go left, > pivot go right 3) Recursively sort left and right. Time: Best/Avg O(n log n), Worst O(n²) when already sorted. Space: O(log n).</div>
+
+<div class="q"><span class="marks">[10M]</span><strong>8.</strong> Construct a BST from: 50, 30, 70, 20, 40, 60, 80. Show inorder, preorder, and postorder traversals.</div>
+<div class="sol"><strong>Solution:</strong> Inorder (sorted): 20, 30, 40, 50, 60, 70, 80 | Preorder: 50, 30, 20, 40, 70, 60, 80 | Postorder: 20, 40, 30, 60, 80, 70, 50</div>
+
+<div class="q"><span class="marks">[10M]</span><strong>9.</strong> Compare BFS and DFS graph traversals. Write pseudocode for BFS.</div>
+<div class="sol"><strong>Solution:</strong> BFS uses queue (level-order), DFS uses stack/recursion (depth-first). BFS finds shortest path in unweighted graphs.
+<pre>BFS(graph, start):
+    queue = [start]
+    visited = {start}
+    while queue is not empty:
+        v = queue.dequeue()
+        process(v)
+        for each neighbor u of v:
+            if u not in visited:
+                visited.add(u)
+                queue.enqueue(u)</pre></div>
+
+<h2>Part C — Problem Solving (2 × 10 = 20 Marks)</h2>
+
+<div class="q"><span class="marks">[10M]</span><strong>10.</strong> Evaluate the postfix expression: 6 2 3 + * 8 2 / -</div>
+<div class="sol"><strong>Solution:</strong> Step by step: Push 6, Push 2, Push 3 → Pop 2,3: 2+3=5, Push 5 → Pop 6,5: 6*5=30, Push 30 → Push 8, Push 2 → Pop 8,2: 8/2=4, Push 4 → Pop 30,4: 30-4=26. <strong>Answer: 26</strong></div>
+
+<div class="q"><span class="marks">[10M]</span><strong>11.</strong> Apply Dijkstra's algorithm to find shortest path from vertex A in the given graph.</div>
+<div class="sol"><strong>Solution:</strong> Initialize dist[A]=0, all others=∞. Process minimum distance vertex, update neighbors. Continue until all vertices processed. Dijkstra's gives O((V+E)log V) with min-heap.</div>
+
+<hr>
+<p style="text-align:center;color:#6b7280;font-size:0.875rem">KL University · End Semester Examination 2023 · Data Structures (CS201) · With Solutions</p>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings — KL University</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div class="main-wrapper">
+      <header class="top-header" id="top-header"></header>
+      <main class="main-content"><div class="space-y-6" style="max-width:48rem" id="page-content"></div></main>
+    </div>
+  </div>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    initDashboardPage();
+    const profile = getProfile();
+
+    document.getElementById('page-content').innerHTML = `
+      <div><h1 class="text-2xl font-display font-bold">Settings & Profile</h1><p class="text-sm text-muted">Manage your account and preferences</p></div>
+
+      <!-- Profile -->
+      <div class="card animate-fade-in-up">
+        <div class="card-body">
+          <h3 class="font-display font-semibold mb-4 flex items-center" style="gap:0.5rem">📷 Profile Information</h3>
+          <div class="flex items-center" style="gap:1.5rem;margin-bottom:1.5rem">
+            <div style="position:relative">
+              <div style="width:5rem;height:5rem;border-radius:50%;background:hsl(0,72%,45%,0.1);display:flex;align-items:center;justify-content:center;color:var(--primary);font-weight:700;font-size:1.5rem;border:2px solid hsl(0,72%,45%,0.2)">${profile.name.charAt(0)}</div>
+            </div>
+            <div>
+              <p class="font-semibold">${profile.name}</p>
+              <p class="text-sm text-muted">${profile.rollNumber}</p>
+            </div>
+          </div>
+          <div class="grid grid-2 gap-4">
+            <div class="form-group"><label class="form-label">Full Name</label><input class="input" id="s-name" value="${profile.name}"></div>
+            <div class="form-group"><label class="form-label">Roll Number</label><input class="input" value="${profile.rollNumber}" disabled style="opacity:0.6"></div>
+            <div class="form-group"><label class="form-label">Email</label><input class="input" id="s-email" value="${profile.email}"></div>
+            <div class="form-group"><label class="form-label">Phone</label><input class="input" id="s-phone" value="${profile.phone}"></div>
+            <div class="form-group"><label class="form-label">Department</label><input class="input" value="${profile.department}" disabled style="opacity:0.6"></div>
+            <div class="form-group"><label class="form-label">Blood Group</label><input class="input" id="s-blood" value="${profile.bloodGroup}"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notifications -->
+      <div class="card animate-fade-in-up delay-1">
+        <div class="card-body">
+          <h3 class="font-display font-semibold mb-4 flex items-center" style="gap:0.5rem">🔔 Notifications</h3>
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <div><p class="text-sm font-medium">Email Notifications</p><p class="text-xs text-muted">Receive updates via email</p></div>
+              <label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label>
+            </div>
+            <div class="flex items-center justify-between">
+              <div><p class="text-sm font-medium">Push Notifications</p><p class="text-xs text-muted">Browser push notifications</p></div>
+              <label class="switch"><input type="checkbox"><span class="switch-slider"></span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="card animate-fade-in-up delay-2">
+        <div class="card-body">
+          <h3 class="font-display font-semibold mb-4 flex items-center" style="gap:0.5rem">🛡️ Security</h3>
+          <div class="space-y-4">
+            <div>
+              <label class="form-label">New Password</label>
+              <div class="flex" style="gap:0.5rem">
+                <input class="input" type="password" id="s-password" placeholder="Enter new password">
+                <button class="btn btn-outline" onclick="showToast('Password Changed','Your password has been updated')">🔒 Change</button>
+              </div>
+            </div>
+            <div class="flex items-center justify-between">
+              <div><p class="text-sm font-medium">Two-Factor Authentication</p><p class="text-xs text-muted">Extra layer of security</p></div>
+              <label class="switch"><input type="checkbox"><span class="switch-slider"></span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="save-settings">💾 Save Changes</button>
+    `;
+
+    document.getElementById('save-settings').addEventListener('click', () => {
+      const updated = {
+        ...profile,
+        name: document.getElementById('s-name').value,
+        email: document.getElementById('s-email').value,
+        phone: document.getElementById('s-phone').value,
+        bloodGroup: document.getElementById('s-blood').value,
+      };
+      saveProfile(updated);
+      showToast('Settings Saved', 'Your profile has been updated');
+    });
+  </script>
+</body>
+</html>

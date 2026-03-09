@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ask Doubts — KL University</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div class="main-wrapper">
+      <header class="top-header" id="top-header"></header>
+      <main class="main-content">
+        <div class="chat-container">
+          <div style="margin-bottom:1rem">
+            <h1 class="text-2xl font-display font-bold flex items-center" style="gap:0.5rem">✨ Ask Your Doubts</h1>
+            <p class="text-sm text-muted">Get instant answers from your AI tutor</p>
+          </div>
+          <div class="chat-messages" id="chat-messages">
+            <div id="welcome-screen" class="animate-fade-in-up" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;gap:1.5rem">
+              <div style="padding:1.25rem;border-radius:50%;background:hsl(0,72%,45%,0.1)"><span style="font-size:3rem">🤖</span></div>
+              <div>
+                <h3 class="font-display font-semibold text-lg">Hi! I'm your AI Tutor 👋</h3>
+                <p class="text-sm text-muted mt-1" style="max-width:28rem">Ask me anything about your subjects — Data Structures, Java, DBMS, Networks, and more!</p>
+              </div>
+              <div class="flex flex-wrap justify-center" style="gap:0.5rem;max-width:32rem" id="suggestions"></div>
+            </div>
+          </div>
+          <div class="chat-input-bar">
+            <button class="btn btn-outline btn-icon" id="clear-chat" style="display:none" title="Clear chat">🗑️</button>
+            <input class="input flex-1" id="chat-input" placeholder="Type your doubt here..." autocomplete="off">
+            <button class="btn btn-primary" id="send-btn">📤</button>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    initDashboardPage();
+    const messages = [];
+    const suggestedQuestions = [
+      "Explain time complexity of merge sort",
+      "What is normalization in DBMS?",
+      "Difference between TCP and UDP",
+      "How does garbage collection work in Java?",
+      "Explain the concept of deadlock in OS",
+    ];
+
+    // AI responses
+    const aiResponses = {
+      "merge sort": "**Merge Sort Time Complexity:**\n\n- **Best Case:** O(n log n)\n- **Average Case:** O(n log n)\n- **Worst Case:** O(n log n)\n\nMerge sort always divides the array in half (log n divisions) and merges them back (O(n) per level). So it's consistently O(n log n) regardless of input order.\n\n**Space Complexity:** O(n) — needs auxiliary array for merging.",
+      "normalization": "**Normalization in DBMS:**\n\nNormalization is the process of organizing data to minimize redundancy.\n\n- **1NF:** Eliminate repeating groups; each column has atomic values\n- **2NF:** Remove partial dependencies (all non-key attributes depend on entire primary key)\n- **3NF:** Remove transitive dependencies\n- **BCNF:** Every determinant is a candidate key\n\nBenefits: reduces data redundancy, prevents update anomalies, ensures data integrity.",
+      "tcp and udp": "**TCP vs UDP:**\n\n| Feature | TCP | UDP |\n|---------|-----|-----|\n| Connection | Connection-oriented | Connectionless |\n| Reliability | Reliable (guaranteed delivery) | Unreliable |\n| Speed | Slower | Faster |\n| Ordering | Ordered | No ordering |\n| Use cases | Web, Email, File transfer | Streaming, Gaming, DNS |",
+      "garbage collection": "**Garbage Collection in Java:**\n\nJava's GC automatically reclaims memory occupied by objects no longer in use.\n\n1. **Mark & Sweep:** Marks reachable objects, sweeps unreachable ones\n2. **Generations:** Young Gen (Eden + Survivor), Old Gen, Metaspace\n3. **Types:** Serial GC, Parallel GC, G1 GC, ZGC\n\nYou can request GC via `System.gc()` but it's not guaranteed to run immediately.",
+      "deadlock": "**Deadlock in OS:**\n\nDeadlock occurs when two or more processes are waiting for each other to release resources.\n\n**Four conditions (all must hold):**\n1. **Mutual Exclusion** — Resource can't be shared\n2. **Hold & Wait** — Process holds one resource, waits for another\n3. **No Preemption** — Resource can't be forcibly taken\n4. **Circular Wait** — Circular chain of processes waiting\n\n**Prevention:** Break any one of the four conditions.",
+    };
+
+    function getAIResponse(text) {
+      const lower = text.toLowerCase();
+      for (const [key, response] of Object.entries(aiResponses)) {
+        if (lower.includes(key)) return response;
+      }
+      return "That's a great question! Here's what I know:\n\nThis topic involves several key concepts. I'd recommend reviewing your lecture notes and textbook for detailed explanations. You can also try practicing with the **Practice Exams** section for hands-on learning.\n\nFeel free to ask me more specific questions!";
+    }
+
+    const chatEl = document.getElementById('chat-messages');
+    const inputEl = document.getElementById('chat-input');
+    const sugEl = document.getElementById('suggestions');
+    const clearBtn = document.getElementById('clear-chat');
+
+    suggestedQuestions.forEach(q => {
+      const btn = document.createElement('button');
+      btn.className = 'suggested-btn';
+      btn.textContent = q;
+      btn.onclick = () => sendMessage(q);
+      sugEl.appendChild(btn);
+    });
+
+    function sendMessage(text) {
+      if (!text.trim()) return;
+      document.getElementById('welcome-screen')?.remove();
+      clearBtn.style.display = 'flex';
+
+      // User message
+      messages.push({ role: 'user', content: text.trim() });
+      renderMessages();
+      inputEl.value = '';
+
+      // Typing indicator
+      setTimeout(() => {
+        const response = getAIResponse(text);
+        messages.push({ role: 'assistant', content: response });
+        renderMessages();
+      }, 800);
+    }
+
+    function renderMessages() {
+      let html = '';
+      messages.forEach(msg => {
+        if (msg.role === 'user') {
+          html += `<div class="chat-msg user animate-fade-in">
+            <div class="chat-bubble user"><p class="text-sm">${msg.content}</p></div>
+            <div class="chat-msg-avatar user-av">👤</div>
+          </div>`;
+        } else {
+          html += `<div class="chat-msg animate-fade-in">
+            <div class="chat-msg-avatar bot">🤖</div>
+            <div class="chat-bubble bot"><div class="text-sm" style="line-height:1.7">${msg.content.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</div></div>
+          </div>`;
+        }
+      });
+      chatEl.innerHTML = html;
+      chatEl.scrollTop = chatEl.scrollHeight;
+    }
+
+    document.getElementById('send-btn').addEventListener('click', () => sendMessage(inputEl.value));
+    inputEl.addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(inputEl.value); });
+    clearBtn.addEventListener('click', () => {
+      messages.length = 0;
+      chatEl.innerHTML = '';
+      clearBtn.style.display = 'none';
+      location.reload();
+    });
+  </script>
+</body>
+</html>

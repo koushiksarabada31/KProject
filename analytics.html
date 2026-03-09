@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics — KL University</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div class="main-wrapper">
+      <header class="top-header" id="top-header"></header>
+      <main class="main-content"><div class="space-y-6" id="page-content"></div></main>
+    </div>
+  </div>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    initDashboardPage();
+    const profile = getProfile();
+    const marks = semesterMarksData[4] || [];
+    const avg = marks.length > 0 ? Math.round(marks.reduce((s,m)=>s+m.total,0)/marks.length) : 0;
+    const highest = marks.length > 0 ? Math.max(...marks.map(m=>m.total)) : 0;
+    const lowest = marks.length > 0 ? Math.min(...marks.map(m=>m.total)) : 0;
+    const highestSub = marks.find(m=>m.total===highest)?.subject || 'N/A';
+    const lowestSub = marks.find(m=>m.total===lowest)?.subject || 'N/A';
+
+    document.getElementById('page-content').innerHTML = `
+      <div><h1 class="text-2xl font-display font-bold">Analytics & Reports</h1><p class="text-sm text-muted">Comprehensive performance analysis</p></div>
+
+      <div class="grid grid-4 gap-4">
+        <div class="stat-card animate-fade-in-up delay-1"><div class="stat-card-inner"><div><p class="stat-card-label">CGPA</p><p class="stat-card-value">${profile.cgpa}</p></div><div class="stat-card-icon primary">${icons.award}</div></div></div>
+        <div class="stat-card animate-fade-in-up delay-2"><div class="stat-card-inner"><div><p class="stat-card-label">Average Score</p><p class="stat-card-value">${avg}%</p></div><div class="stat-card-icon success">${icons.target}</div></div></div>
+        <div class="stat-card animate-fade-in-up delay-3"><div class="stat-card-inner"><div><p class="stat-card-label">Highest Score</p><p class="stat-card-value">${highest}</p><p class="stat-card-subtitle">${highestSub}</p></div><div class="stat-card-icon accent">${icons.trendingUp}</div></div></div>
+        <div class="stat-card animate-fade-in-up delay-4"><div class="stat-card-inner"><div><p class="stat-card-label">Percentile</p><p class="stat-card-value">87th</p><p class="stat-card-subtitle">In your batch</p></div><div class="stat-card-icon info">${icons.graduationCap}</div></div></div>
+      </div>
+
+      <div class="grid grid-2 gap-6">
+        <div class="card animate-fade-in-up delay-3"><div class="card-body"><h3 class="font-display font-semibold mb-4">Performance Trend</h3><div class="chart-container" style="height:280px"><canvas id="trendChart"></canvas></div></div></div>
+        <div class="card animate-fade-in-up delay-4"><div class="card-body"><h3 class="font-display font-semibold mb-4">You vs Class Average</h3><div class="chart-container" style="height:280px"><canvas id="compChart"></canvas></div></div></div>
+        <div class="card animate-fade-in-up delay-5"><div class="card-body"><h3 class="font-display font-semibold mb-4">Strengths & Weaknesses</h3><div class="chart-container" style="height:280px"><canvas id="radarChart"></canvas></div></div></div>
+        <div class="card animate-fade-in-up delay-6"><div class="card-body">
+          <h3 class="font-display font-semibold mb-6">Key Insights</h3>
+          <div class="space-y-4">
+            <div class="insight-card success"><p class="insight-card-title success">💪 Strongest Subject</p><p class="mt-1">${highestSub} — ${highest}/100</p></div>
+            <div class="insight-card warning"><p class="insight-card-title warning">📈 Needs Improvement</p><p class="mt-1">${lowestSub} — ${lowest}/100</p></div>
+            <div class="insight-card info"><p class="insight-card-title info">📊 Overall Standing</p><p class="mt-1">Above class average by ~12% across all subjects</p></div>
+          </div>
+        </div></div>
+      </div>
+    `;
+
+    // Performance Trend
+    new Chart(document.getElementById('trendChart'), {
+      type: 'line',
+      data: { labels: gpaTrend.map(g=>g.semester), datasets: [{ label:'GPA', data:gpaTrend.map(g=>g.gpa), borderColor:'hsl(0,72%,45%)', borderWidth:3, tension:0.3, pointRadius:5, pointBackgroundColor:'hsl(0,72%,45%)', fill:false }] },
+      options: { responsive:true, maintainAspectRatio:false, scales:{ y:{min:7,max:10} }, plugins:{legend:{display:false}} }
+    });
+
+    // Comparison
+    const compData = marks.map(m => ({ subject: m.code, yours: m.total, classAvg: Math.round(m.total * (0.85 + Math.random()*0.1)) }));
+    new Chart(document.getElementById('compChart'), {
+      type: 'bar',
+      data: { labels: compData.map(d=>d.subject), datasets: [
+        { label:'Your Score', data:compData.map(d=>d.yours), backgroundColor:'hsl(0,72%,45%)', borderRadius:4 },
+        { label:'Class Average', data:compData.map(d=>d.classAvg), backgroundColor:'hsl(220,14%,80%)', borderRadius:4 },
+      ]},
+      options: { responsive:true, maintainAspectRatio:false, scales:{ y:{min:0,max:100} } }
+    });
+
+    // Radar
+    new Chart(document.getElementById('radarChart'), {
+      type: 'radar',
+      data: { labels: marks.map(m=>m.code), datasets: [{ label:'Score', data:marks.map(m=>m.total), borderColor:'hsl(0,72%,45%)', backgroundColor:'hsl(0,72%,45%,0.2)', borderWidth:2 }] },
+      options: { responsive:true, maintainAspectRatio:false, scales:{ r:{min:0,max:100} } }
+    });
+  </script>
+</body>
+</html>

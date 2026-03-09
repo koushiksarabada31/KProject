@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exam Schedule — KL University</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div class="main-wrapper">
+      <header class="top-header" id="top-header"></header>
+      <main class="main-content"><div class="space-y-6" id="page-content"></div></main>
+    </div>
+  </div>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    initDashboardPage();
+
+    const items = exams.map((e,i) => `
+      <div class="card animate-fade-in-up delay-${(i%5)+1}">
+        <div class="card-body">
+          <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem">
+            <div>
+              <h3 class="text-lg font-semibold">${e.subject}</h3>
+              <p class="text-sm text-muted mt-1">Syllabus: ${e.syllabus}</p>
+            </div>
+            <div class="grid" style="grid-template-columns:repeat(4,auto);gap:1rem">
+              <div class="flex items-center text-sm text-muted" style="gap:0.5rem"><span style="color:var(--primary)">📅</span>${formatDate(e.date)}</div>
+              <div class="flex items-center text-sm text-muted" style="gap:0.5rem"><span style="color:var(--info)">🕐</span>${e.time}</div>
+              <div class="flex items-center text-sm text-muted" style="gap:0.5rem"><span style="color:var(--warning)">📍</span>${e.center}, ${e.room}</div>
+              <div class="flex items-center text-sm text-muted" style="gap:0.5rem"><span style="color:var(--success)">💺</span>Seat ${e.seat}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    document.getElementById('page-content').innerHTML = `
+      <div><h1 class="text-2xl font-display font-bold">Exam Schedule</h1><p class="text-sm text-muted">Upcoming examination details</p></div>
+      <div class="space-y-4">${items || '<p class="text-center text-muted" style="padding:3rem">No exams scheduled</p>'}</div>
+    `;
+  </script>
+</body>
+</html>

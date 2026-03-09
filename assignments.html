@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assignments — KL University</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div class="main-wrapper">
+      <header class="top-header" id="top-header"></header>
+      <main class="main-content"><div class="space-y-6" id="page-content"></div></main>
+    </div>
+  </div>
+  <div class="modal-overlay" id="upload-modal">
+    <div class="modal">
+      <h2>Upload New Assignment</h2>
+      <p class="subtitle">Add a new assignment with optional file attachment</p>
+      <div class="space-y-4">
+        <div class="form-group"><label class="form-label">Title *</label><input class="input" id="a-title" placeholder="e.g. Binary Search Tree Implementation"></div>
+        <div class="form-group"><label class="form-label">Subject *</label><input class="input" id="a-subject" placeholder="e.g. Data Structures"></div>
+        <div class="form-group"><label class="form-label">Due Date *</label><input class="input" type="date" id="a-date"></div>
+        <div class="form-group"><label class="form-label">Notes (optional)</label><textarea class="input" id="a-notes" rows="3" placeholder="Add any notes..."></textarea></div>
+        <button class="btn btn-primary btn-full" id="save-assignment">Upload Assignment</button>
+        <button class="btn btn-outline btn-full" id="cancel-modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    initDashboardPage();
+    let userAssignments = JSON.parse(localStorage.getItem('kl_assignments') || '[]');
+
+    function render() {
+      const content = document.getElementById('page-content');
+      const samplesHTML = sampleAssignments.map(s => `
+        <a href="${s.url}" class="card" style="padding:0.75rem;text-decoration:none;transition:background 0.2s">
+          <p class="text-xs text-muted">${s.subject}</p>
+          <p class="text-sm font-medium mt-1">${s.title}</p>
+        </a>
+      `).join('');
+
+      const uploadsHTML = userAssignments.length === 0 ? `
+        <div class="card" style="padding:2rem;text-align:center">
+          <div style="color:var(--muted-foreground);margin-bottom:0.75rem">${icons.fileText}</div>
+          <p class="text-muted">No assignments uploaded yet</p>
+          <p class="text-sm text-muted mt-1">Click "Upload Assignment" to add one</p>
+        </div>
+      ` : userAssignments.map((a,i) => `
+        <div class="card animate-fade-in-up delay-${(i%5)+1}">
+          <div class="card-body flex items-center justify-between" style="flex-wrap:wrap;gap:1rem">
+            <div class="flex-1" style="min-width:200px">
+              <div class="flex items-center" style="gap:0.5rem;margin-bottom:0.25rem">
+                <span style="color:var(--primary)">${icons.fileText}</span>
+                <h4 class="font-semibold">${a.title}</h4>
+              </div>
+              <p class="text-sm text-muted">${a.subject}</p>
+              <div class="flex items-center text-xs text-muted mt-2" style="gap:1rem">
+                <span>📅 Due: ${formatDate(a.dueDate)}</span>
+                ${a.notes ? '<span>📝 Has notes</span>' : ''}
+              </div>
+              ${a.notes ? `<p class="text-xs text-muted mt-2" style="font-style:italic">"${a.notes}"</p>` : ''}
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="deleteAssignment(${i})" style="color:var(--destructive)">🗑️ Delete</button>
+          </div>
+        </div>
+      `).join('');
+
+      content.innerHTML = `
+        <div class="flex items-center justify-between" style="flex-wrap:wrap;gap:0.75rem">
+          <div><h1 class="text-2xl font-display font-bold">My Assignments</h1><p class="text-sm text-muted">Upload and view your assignments before exams</p></div>
+          <button class="btn btn-primary" id="open-upload">📤 Upload Assignment</button>
+        </div>
+        <div class="card animate-fade-in"><div class="card-body">
+          <h3 class="font-display font-semibold mb-3 flex items-center" style="gap:0.5rem"><span style="color:var(--primary)">${icons.bookOpen}</span> Sample Assignments</h3>
+          <div class="grid grid-4 gap-4" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))">${samplesHTML}</div>
+        </div></div>
+        <div>
+          <h3 class="font-display font-semibold mb-3">Your Uploaded Assignments (${userAssignments.length})</h3>
+          <div class="space-y-4">${uploadsHTML}</div>
+        </div>
+      `;
+      document.getElementById('open-upload').addEventListener('click', () => document.getElementById('upload-modal').classList.add('active'));
+    }
+
+    document.getElementById('cancel-modal').addEventListener('click', () => document.getElementById('upload-modal').classList.remove('active'));
+    document.getElementById('save-assignment').addEventListener('click', () => {
+      const title = document.getElementById('a-title').value.trim();
+      const subject = document.getElementById('a-subject').value.trim();
+      const dueDate = document.getElementById('a-date').value;
+      const notesVal = document.getElementById('a-notes').value.trim();
+      if (!title || !subject || !dueDate) { showToast('Missing fields', 'Please fill all required fields', 'destructive'); return; }
+      userAssignments.unshift({ title, subject, dueDate, notes: notesVal || null });
+      localStorage.setItem('kl_assignments', JSON.stringify(userAssignments));
+      document.getElementById('upload-modal').classList.remove('active');
+      showToast('Success!', 'Assignment uploaded successfully');
+      render();
+    });
+
+    window.deleteAssignment = function(i) {
+      if (!confirm('Delete this assignment?')) return;
+      userAssignments.splice(i, 1);
+      localStorage.setItem('kl_assignments', JSON.stringify(userAssignments));
+      showToast('Deleted', 'Assignment removed');
+      render();
+    };
+
+    render();
+  </script>
+</body>
+</html>

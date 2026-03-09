@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Previous Papers — KL University</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div class="main-wrapper">
+      <header class="top-header" id="top-header"></header>
+      <main class="main-content"><div class="space-y-6" id="page-content"></div></main>
+    </div>
+  </div>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    initDashboardPage();
+    const diffBadge = { Easy:'badge-success', Medium:'badge-warning', Hard:'badge-danger' };
+
+    const items = papers.map((p,i) => `
+      <div class="card animate-fade-in-up delay-${(i%5)+1}">
+        <div class="card-body flex items-center justify-between" style="flex-wrap:wrap;gap:1rem">
+          <div class="flex items-center" style="gap:1rem">
+            <div style="padding:0.75rem;border-radius:0.75rem;background:hsl(0,72%,45%,0.1);color:var(--primary)">${icons.fileText}</div>
+            <div>
+              <h3 class="font-semibold">${p.subject}</h3>
+              <div class="flex items-center mt-1" style="gap:0.5rem">
+                <span class="text-xs text-muted">${p.year} • ${p.type}</span>
+                <span class="badge ${diffBadge[p.difficulty]}">${p.difficulty}</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center" style="gap:0.75rem">
+            <span class="flex items-center text-xs" style="gap:0.25rem;color:${p.hasSolutions?'var(--success)':'var(--muted-foreground)'}">
+              ${p.hasSolutions ? '✅' : '❌'} Solutions
+            </span>
+            <a href="${p.downloadFile}" download class="btn btn-outline btn-sm" onclick="showToast('Download Started','${p.subject} paper downloading')">📥 Download</a>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    document.getElementById('page-content').innerHTML = `
+      <div><h1 class="text-2xl font-display font-bold">Previous Year Papers</h1><p class="text-sm text-muted">Past question papers for exam preparation</p></div>
+      <div class="space-y-4">${items}</div>
+    `;
+  </script>
+</body>
+</html>

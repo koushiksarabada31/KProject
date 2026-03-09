@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — KL University</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div class="main-wrapper">
+      <header class="top-header" id="top-header"></header>
+      <main class="main-content">
+        <div class="space-y-6" id="dashboard-content"></div>
+      </main>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    initDashboardPage();
+    const profile = getProfile();
+    const content = document.getElementById('dashboard-content');
+
+    // Profile Banner
+    const pendingCount = assignments.filter(a => a.status === 'pending').length;
+    content.innerHTML = `
+      <!-- Profile Banner -->
+      <div class="profile-banner animate-fade-in-up">
+        <div class="profile-banner-deco"></div>
+        <div class="profile-banner-content">
+          <div class="profile-avatar-placeholder-lg">${profile.name.charAt(0)}</div>
+          <div class="flex-1">
+            <h1 class="profile-name font-display">${profile.name}</h1>
+            <p class="profile-meta">${profile.rollNumber} • ${profile.program} ${profile.department} • Semester ${profile.semester}</p>
+            <div class="profile-contacts">
+              <span>📧 ${profile.email}</span>
+              <span>📱 ${profile.phone || 'Not set'}</span>
+              <span>🩸 ${profile.bloodGroup || 'Not set'}</span>
+            </div>
+          </div>
+          <div class="cgpa-box">
+            <p class="cgpa-value font-display">${profile.cgpa}</p>
+            <p class="cgpa-label">CGPA</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid grid-4 gap-5">
+        <div class="stat-card animate-fade-in-up delay-1">
+          <div class="stat-card-inner">
+            <div><p class="stat-card-label">Current CGPA</p><p class="stat-card-value">${profile.cgpa}</p><p class="stat-card-subtitle">Out of 10.0</p></div>
+            <div class="stat-card-icon primary">${icons.award}</div>
+          </div>
+        </div>
+        <div class="stat-card animate-fade-in-up delay-2">
+          <div class="stat-card-inner">
+            <div><p class="stat-card-label">Credits Earned</p><p class="stat-card-value">${profile.totalCredits}</p><p class="stat-card-subtitle">of ${profile.requiredCredits} required</p></div>
+            <div class="stat-card-icon success">${icons.graduationCap}</div>
+          </div>
+        </div>
+        <div class="stat-card animate-fade-in-up delay-3">
+          <div class="stat-card-inner">
+            <div><p class="stat-card-label">Pending Tasks</p><p class="stat-card-value">${pendingCount}</p><p class="stat-card-subtitle">assignments due</p></div>
+            <div class="stat-card-icon accent">${icons.bookOpen}</div>
+          </div>
+        </div>
+        <div class="stat-card animate-fade-in-up delay-4">
+          <div class="stat-card-inner">
+            <div><p class="stat-card-label">Semester</p><p class="stat-card-value">${profile.semester}</p><p class="stat-card-subtitle">${profile.program}</p></div>
+            <div class="stat-card-icon info">${icons.trendingUp}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts + Activity -->
+      <div style="display:grid;grid-template-columns:1fr;gap:1.25rem">
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:1.25rem" class="charts-row">
+          <div class="card animate-fade-in-up delay-5">
+            <div class="card-body">
+              <h3 class="font-display font-semibold mb-4">GPA Trend</h3>
+              <div class="chart-container"><canvas id="gpaChart"></canvas></div>
+            </div>
+          </div>
+          <div class="card animate-fade-in-up delay-6">
+            <div class="card-body">
+              <h3 class="font-display font-semibold mb-4">Recent Activity</h3>
+              <div class="space-y-4" id="activity-feed"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Responsive chart row
+    const style = document.createElement('style');
+    style.textContent = '@media(max-width:1023px){.charts-row{grid-template-columns:1fr!important}}';
+    document.head.appendChild(style);
+
+    // GPA Chart
+    const ctx = document.getElementById('gpaChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: gpaTrend.map(g => g.semester),
+        datasets: [{
+          label: 'GPA', data: gpaTrend.map(g => g.gpa),
+          borderColor: 'hsl(0, 72%, 45%)', backgroundColor: 'hsl(0, 72%, 45%, 0.1)',
+          borderWidth: 3, tension: 0.3, fill: true,
+          pointBackgroundColor: 'hsl(0, 72%, 45%)', pointRadius: 5,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: { y: { min: 7, max: 10, grid: { color: 'hsl(220, 13%, 88%)' } }, x: { grid: { display: false } } },
+        plugins: { legend: { display: false } }
+      }
+    });
+    document.getElementById('gpaChart').parentElement.style.height = '250px';
+
+    // Activity feed
+    const activityIcons = { assignment: '📝', grade: '🏆', note: '📚', exam: '⚠️', practice: '🎓' };
+    const feed = document.getElementById('activity-feed');
+    recentActivity.forEach(a => {
+      feed.innerHTML += `
+        <div style="display:flex;align-items:flex-start;gap:0.75rem">
+          <div style="padding:0.5rem;border-radius:0.5rem;background:hsl(0,72%,45%,0.1);margin-top:2px;font-size:0.875rem">${activityIcons[a.type] || '📌'}</div>
+          <div class="flex-1" style="min-width:0">
+            <p style="font-size:0.875rem;line-height:1.4">${a.message}</p>
+            <p class="text-xs text-muted" style="margin-top:2px">${a.time}</p>
+          </div>
+        </div>
+      `;
+    });
+  </script>
+</body>
+</html>

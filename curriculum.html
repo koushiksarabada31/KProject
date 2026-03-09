@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Curriculum — KL University</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div class="main-wrapper">
+      <header class="top-header" id="top-header"></header>
+      <main class="main-content"><div class="space-y-6" id="page-content"></div></main>
+    </div>
+  </div>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    initDashboardPage();
+    const profile = getProfile();
+    const progressPct = Math.round((profile.totalCredits / profile.requiredCredits) * 100);
+
+    const semCards = curriculum.map((sem, si) => {
+      const totalCr = sem.subjects.reduce((s, sub) => s + sub.credits, 0);
+      const rows = sem.subjects.map(sub => `
+        <div style="padding:0.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between">
+          <div class="flex items-center" style="gap:0.75rem">
+            <span style="color:${sub.status==='passed'?'var(--success)':'var(--warning)'}">${sub.status==='passed'?'✅':'⏳'}</span>
+            <span class="text-sm">${sub.name}</span>
+          </div>
+          <div class="flex items-center" style="gap:1rem">
+            <span class="text-sm text-muted">${sub.credits} credits</span>
+            <span class="font-semibold text-sm" style="width:2rem;text-align:right">${sub.grade}</span>
+          </div>
+        </div>
+      `).join('');
+      return `
+        <div class="card animate-fade-in-up delay-${(si%5)+1}">
+          <div class="card-header"><h3 class="font-display font-semibold">Semester ${sem.semester}</h3><span class="text-sm text-muted">${totalCr} credits</span></div>
+          <div class="divide-y">${rows}</div>
+        </div>
+      `;
+    }).join('');
+
+    document.getElementById('page-content').innerHTML = `
+      <div><h1 class="text-2xl font-display font-bold">Curriculum & Credits</h1><p class="text-sm text-muted">Track your academic progression</p></div>
+      <div style="display:grid;grid-template-columns:1fr 2fr;gap:1.5rem" class="cur-grid">
+        <div class="card text-center animate-fade-in-up">
+          <div class="card-body">
+            <div style="color:var(--primary);margin-bottom:0.75rem">${icons.graduationCap}</div>
+            <p class="text-4xl font-display font-bold">${profile.totalCredits}</p>
+            <p class="text-sm text-muted mt-1">of ${profile.requiredCredits} credits earned</p>
+            <div class="progress-bar h-3 mt-4"><div class="progress-bar-fill" style="width:${progressPct}%"></div></div>
+            <p class="text-xs text-muted mt-2">${progressPct}% towards graduation</p>
+          </div>
+        </div>
+        <div class="card animate-fade-in-up delay-1">
+          <div class="card-body">
+            <h3 class="font-display font-semibold mb-4">Credit Distribution</h3>
+            <div class="chart-container" style="height:200px"><canvas id="creditPie"></canvas></div>
+          </div>
+        </div>
+      </div>
+      ${semCards}
+    `;
+
+    // Responsive grid
+    const style = document.createElement('style');
+    style.textContent = '@media(max-width:1023px){.cur-grid{grid-template-columns:1fr!important}}';
+    document.head.appendChild(style);
+
+    // Pie chart
+    const COLORS = ['hsl(0,72%,45%)','hsl(35,95%,55%)','hsl(152,60%,40%)','hsl(210,80%,52%)'];
+    const creditData = curriculum.map(sem => ({ name: `Sem ${sem.semester}`, credits: sem.subjects.reduce((s,sub) => s + sub.credits, 0) }));
+    new Chart(document.getElementById('creditPie'), {
+      type: 'pie',
+      data: { labels: creditData.map(d=>d.name), datasets: [{ data: creditData.map(d=>d.credits), backgroundColor: COLORS }] },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KL University — Login</title>
+  <meta name="description" content="KL University Academic Portal — Login">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="login-container">
+    <!-- Left - Campus Image -->
+    <div class="login-hero">
+      <img src="assets/campus-hero.jpg" alt="KL University Campus">
+      <div class="login-hero-overlay"></div>
+      <div class="login-hero-content animate-fade-in-up">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:1rem"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg>
+        <h2>A Complete Student Portal</h2>
+        <p>Access your complete academic journey — marks, resources, analytics, and more — all in one place.</p>
+      </div>
+    </div>
+
+    <!-- Right - Login Form -->
+    <div class="login-form-wrapper">
+      <div class="login-form-box animate-scale-in">
+        <div class="logo-section">
+          <img src="assets/kl-logo.png" alt="KL University">
+          <h1>KL University</h1>
+          <p>Academic Portal — Hyderabad</p>
+        </div>
+
+        <!-- Signup extra fields (hidden by default) -->
+        <div id="signup-fields" style="display:none" class="space-y-4">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" id="fullName" class="input input-lg" placeholder="e.g., Aarav Sharma">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Roll Number</label>
+            <input type="text" id="rollNumber" class="input input-lg" placeholder="e.g., 22BEC001">
+          </div>
+        </div>
+
+        <form id="login-form" class="space-y-4">
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" id="email" class="input input-lg" placeholder="you@example.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <div style="position:relative">
+              <input type="password" id="password" class="input input-lg" placeholder="Enter your password" required style="padding-right:3rem">
+              <button type="button" id="toggle-password" style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted-foreground);cursor:pointer;padding:0.25rem">
+                <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+          <button type="submit" id="submit-btn" class="btn btn-primary btn-full btn-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>
+            <span id="btn-text">Sign In</span>
+          </button>
+        </form>
+
+        <p style="text-align:center;font-size:0.875rem;color:var(--muted-foreground);margin-top:1.5rem">
+          <span id="toggle-text">Don't have an account?</span>
+          <button id="toggle-mode" style="background:none;border:none;color:var(--primary);font-weight:500;cursor:pointer;text-decoration:underline"> Sign Up</button>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    // Redirect if already logged in
+    if (isAuthenticated()) window.location.href = 'dashboard.html';
+
+    let isSignup = false;
+    const form = document.getElementById('login-form');
+    const signupFields = document.getElementById('signup-fields');
+    const toggleBtn = document.getElementById('toggle-mode');
+    const toggleText = document.getElementById('toggle-text');
+    const btnText = document.getElementById('btn-text');
+
+    toggleBtn.addEventListener('click', () => {
+      isSignup = !isSignup;
+      signupFields.style.display = isSignup ? 'block' : 'none';
+      btnText.textContent = isSignup ? 'Sign Up' : 'Sign In';
+      toggleText.textContent = isSignup ? 'Already have an account?' : "Don't have an account?";
+      toggleBtn.textContent = isSignup ? 'Sign In' : 'Sign Up';
+    });
+
+    // Password toggle
+    document.getElementById('toggle-password').addEventListener('click', () => {
+      const pw = document.getElementById('password');
+      pw.type = pw.type === 'password' ? 'text' : 'password';
+    });
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      if (isSignup) {
+        const fullName = document.getElementById('fullName').value.trim();
+        const rollNumber = document.getElementById('rollNumber').value.trim().toUpperCase();
+        const result = signupUser(email, password, fullName, rollNumber);
+        if (result.error) {
+          showToast('Signup Failed', result.error, 'destructive');
+        } else {
+          showToast('Account Created!', 'Welcome to KL University Portal');
+          window.location.href = 'dashboard.html';
+        }
+      } else {
+        const result = loginUser(email, password);
+        if (result.error) {
+          showToast('Login Failed', result.error, 'destructive');
+        } else {
+          showToast('Welcome back!', 'Login successful');
+          window.location.href = 'dashboard.html';
+        }
+      }
+    });
+  </script>
+</body>
+</html>

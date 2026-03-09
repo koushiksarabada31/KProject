@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Digital Logic — Unit 3 Presentation</title>
+<style>body{font-family:'Segoe UI',sans-serif;max-width:800px;margin:2rem auto;padding:0 1.5rem;line-height:1.8;color:#1a1a2e}h1{color:#b91c1c;border-bottom:3px solid #b91c1c;padding-bottom:0.5rem}h2{color:#c2410c;margin-top:2rem}h3{color:#0369a1}table{border-collapse:collapse;width:100%;margin:1rem 0}th,td{border:1px solid #d1d5db;padding:8px 12px;text-align:center}th{background:#f3f4f6}.slide{background:#f8fafc;border:2px solid #e2e8f0;border-radius:12px;padding:1.5rem;margin:1.5rem 0;page-break-inside:avoid}.slide h3{margin-top:0}pre{background:#1e293b;color:#e2e8f0;padding:1rem;border-radius:8px}</style>
+</head>
+<body>
+<h1>📊 Digital Logic Design — Unit 3</h1>
+<p><strong>Subject:</strong> CS202 | <strong>Topic:</strong> Combinational Logic Circuits</p>
+
+<div class="slide">
+<h3>Slide 1: Introduction to Combinational Circuits</h3>
+<p>A combinational circuit's output depends only on the <strong>current inputs</strong> (no memory/state).</p>
+<p><strong>Examples:</strong> Adders, Subtractors, Multiplexers, Decoders, Encoders</p>
+</div>
+
+<div class="slide">
+<h3>Slide 2: Half Adder</h3>
+<table>
+<tr><th>A</th><th>B</th><th>Sum (S)</th><th>Carry (C)</th></tr>
+<tr><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>1</td><td>1</td><td>0</td></tr>
+<tr><td>1</td><td>0</td><td>1</td><td>0</td></tr>
+<tr><td>1</td><td>1</td><td>0</td><td>1</td></tr>
+</table>
+<p><strong>S = A ⊕ B</strong> (XOR) &nbsp;&nbsp; <strong>C = A · B</strong> (AND)</p>
+</div>
+
+<div class="slide">
+<h3>Slide 3: Full Adder</h3>
+<p>Adds three bits: A, B, and Carry-in (Cin)</p>
+<p><strong>Sum = A ⊕ B ⊕ Cin</strong></p>
+<p><strong>Cout = (A · B) + (Cin · (A ⊕ B))</strong></p>
+</div>
+
+<div class="slide">
+<h3>Slide 4: Multiplexer (MUX)</h3>
+<p>A 2ⁿ-to-1 MUX selects one of 2ⁿ inputs using n select lines.</p>
+<p><strong>4:1 MUX:</strong> Y = S̄₁·S̄₀·I₀ + S̄₁·S₀·I₁ + S₁·S̄₀·I₂ + S₁·S₀·I₃</p>
+</div>
+
+<div class="slide">
+<h3>Slide 5: Decoder</h3>
+<p>An n-to-2ⁿ decoder activates exactly one of 2ⁿ outputs.</p>
+<p><strong>2:4 Decoder outputs:</strong> D₀ = S̄₁·S̄₀, D₁ = S̄₁·S₀, D₂ = S₁·S̄₀, D₃ = S₁·S₀</p>
+</div>
+
+<div class="slide">
+<h3>Slide 6: Karnaugh Map (K-Map)</h3>
+<p>A graphical method to simplify Boolean expressions.</p>
+<table>
+<tr><th></th><th>B̄C̄</th><th>B̄C</th><th>BC</th><th>BC̄</th></tr>
+<tr><th>Ā</th><td>1</td><td>0</td><td>1</td><td>1</td></tr>
+<tr><th>A</th><td>1</td><td>0</td><td>0</td><td>1</td></tr>
+</table>
+<p><strong>Steps:</strong> 1) Fill K-Map → 2) Group adjacent 1s (powers of 2) → 3) Write simplified expression</p>
+</div>
+
+<hr>
+<p style="text-align:center;color:#6b7280;font-size:0.875rem">KL University · CS202 Digital Logic · Unit 3 Presentation Notes</p>
+</body>
+</html>

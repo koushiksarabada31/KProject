@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>DBMS Normalization Notes</title>
+<style>body{font-family:'Segoe UI',sans-serif;max-width:800px;margin:2rem auto;padding:0 1.5rem;line-height:1.8;color:#1a1a2e}h1{color:#b91c1c;border-bottom:3px solid #b91c1c;padding-bottom:0.5rem}h2{color:#c2410c;margin-top:2rem}h3{color:#0369a1}table{border-collapse:collapse;width:100%;margin:1rem 0}th,td{border:1px solid #d1d5db;padding:8px 12px;text-align:left}th{background:#f3f4f6}pre{background:#1e293b;color:#e2e8f0;padding:1rem;border-radius:8px}.warn{background:#fef3c7;border-left:4px solid #f59e0b;padding:0.75rem 1rem;margin:1rem 0;border-radius:0 8px 8px 0}</style>
+</head>
+<body>
+<h1>🗄️ DBMS Normalization — Complete Notes</h1>
+<p><strong>Subject:</strong> CS204 — Database Systems | <strong>Unit:</strong> 3</p>
+
+<h2>Why Normalization?</h2>
+<p>Normalization eliminates:</p>
+<ul>
+<li><strong>Insertion anomaly</strong> — Can't add data without other required data</li>
+<li><strong>Update anomaly</strong> — Updating one place but not another</li>
+<li><strong>Deletion anomaly</strong> — Deleting one thing accidentally deletes another</li>
+</ul>
+
+<h2>Normal Forms</h2>
+
+<h3>1NF — First Normal Form</h3>
+<p>✅ All columns contain <strong>atomic (indivisible)</strong> values. No repeating groups.</p>
+<div class="warn"><strong>❌ Violation:</strong> Student(Name, Phone: "9876, 1234") — Phone has multiple values<br>
+<strong>✅ Fix:</strong> Split into separate rows or a Phone table</div>
+
+<h3>2NF — Second Normal Form</h3>
+<p>✅ In 1NF + No <strong>partial dependencies</strong> (non-key attribute depends on part of composite key)</p>
+<pre>// Bad: StudentCourse(StudentID, CourseID, StudentName, Grade)
+// StudentName depends only on StudentID, not full key
+// Fix: Split into Student(StudentID, StudentName) + Enrollment(StudentID, CourseID, Grade)</pre>
+
+<h3>3NF — Third Normal Form</h3>
+<p>✅ In 2NF + No <strong>transitive dependencies</strong> (A → B → C means A → C transitively)</p>
+<pre>// Bad: Student(StudentID, DeptID, DeptName)
+// StudentID → DeptID → DeptName (transitive!)
+// Fix: Student(StudentID, DeptID) + Dept(DeptID, DeptName)</pre>
+
+<h3>BCNF — Boyce-Codd Normal Form</h3>
+<p>✅ In 3NF + Every determinant is a <strong>candidate key</strong></p>
+
+<h2>Quick Reference Table</h2>
+<table>
+<tr><th>NF</th><th>Requirement</th><th>Eliminates</th></tr>
+<tr><td>1NF</td><td>Atomic values</td><td>Repeating groups</td></tr>
+<tr><td>2NF</td><td>No partial dependency</td><td>Partial key dependencies</td></tr>
+<tr><td>3NF</td><td>No transitive dependency</td><td>Transitive dependencies</td></tr>
+<tr><td>BCNF</td><td>Every determinant is candidate key</td><td>All FD anomalies</td></tr>
+</table>
+
+<h2>SQL: Creating Normalized Tables</h2>
+<pre>CREATE TABLE Department (
+    dept_id INT PRIMARY KEY,
+    dept_name VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE Student (
+    student_id INT PRIMARY KEY,
+    name VARCHAR(100),
+    dept_id INT,
+    FOREIGN KEY (dept_id) REFERENCES Department(dept_id)
+);</pre>
+
+<hr>
+<p style="text-align:center;color:#6b7280;font-size:0.875rem">KL University · CS204 Database Systems · Normalization Notes</p>
+</body>
+</html>
